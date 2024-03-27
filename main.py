@@ -1,38 +1,49 @@
 from typing import Optional
 import typer
 from typing_extensions import Annotated
-from rich import print
+from rich import print, box
+from calendar_utils import get_events
+from rich.console import Console
+from rich.table import Table, Column
 
-app = typer.Typer(no_args_is_help=True, help="This is a python CLI integrated with Google Calendar.")
-events_app = typer.Typer(no_args_is_help=True,help="Create events google calendar or show events google calendar")
+
+app = typer.Typer(no_args_is_help=True, help="This is a python CLI integrated with Google Calendar.", rich_markup_mode="rich")
+events_app = typer.Typer(no_args_is_help=True,help="Create events google calendar or show events google calendar",)
 app.add_typer(events_app, name="events")
 
+console = Console()
 
-@events_app.command("create")
-def items_create(name: str, description: str):
+@events_app.command("create", no_args_is_help=True)
+def events_create(event_name: Annotated[str, typer.Argument(help="Name of the event")],
+                  description: Annotated[str, typer.Argument(help="Description of the event")]):
     """
-    Create a new event in Google Calendar
-    
-    Args:
-        name (str): Name of the event
-        description (str): Description of the event
-        
-    mudar para usar os types para no terminal ficar bonitinho
-
+    [bold green]Create[/bold green] a new event in Google Calendar
     """
-    print(f"Create event {name} with description {description}")
+    print(f"Create event {event_name} with description {description}")
 
 @events_app.command("show")
-
-
-def items_show(filter: Optional[str] = None):
+def events_show(filter: Annotated[str, typer.Option(help="Filter to show events that occurs at the actual day or at the week.")] = "today"):
     """
-    Show events of google calendar
+    [bold green]Show[/bold green] events of google calendar
     """
-    if Optional:
-        print("Show events google calendar with filter")
-    print("Show events google calendar")
-
+    if filter == "today":
+        events = get_events("today")
+        if not events:
+            print("No events today.")
+            return
+        table = Table("Summary", Column(header="Status", style="green"), "Date", title="Events of today", show_lines=True, box=box.HEAVY_HEAD) 
+        for event in events:
+            table.add_row(event['summary'], event['status'], event['start']['dateTime'])
+        console.print(table)
+    else:
+        events = get_events("week")
+        if not events:
+            print("No events at the week.")
+            return
+        table = Table("Summary", Column(header="Status", style="green"), "Date", title="Events of today", show_lines=True, box=box.HEAVY_HEAD) 
+        for event in events:
+            table.add_row(event['summary'], event['status'], event['start']['dateTime'])
+        console.print(table)
 
 if __name__ == "__main__":
     app()
