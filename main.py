@@ -40,7 +40,7 @@ def events_show(filter: Annotated[str, typer.Option(help="Filter to show events 
         if not events:
             print("No events at the week.")
             return
-        table = Table("Summary", Column(header="Status", style="green"), "Date", title="Events of today", show_lines=True, box=box.HEAVY_HEAD) 
+        table = Table("Summary", Column(header="Status", style="green"), "Date", title="Events of the week", show_lines=True, box=box.HEAVY_HEAD) 
         for event in events:
             table.add_row(event['summary'], event['status'], event['start']['dateTime'])
         console.print(table)
